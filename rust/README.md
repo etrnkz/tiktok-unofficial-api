@@ -27,7 +27,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tiktok-api = { git = "https://github.com/etrnkz/tiktok-unofficial-api-rs" }
+tiktok-api = { git = "https://github.com/etrnkz/tiktok-api-rs" }
 tokio = { version = "1", features = ["full"] }
 ```
 
