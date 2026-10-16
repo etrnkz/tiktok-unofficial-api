@@ -1,0 +1,418 @@
+syntax = "proto3";
+
+package im_proto;
+
+// ─── Outer Frame ────────────────────────────────────────────
+
+message Frame {
+  uint64 seqid = 1;
+  uint64 logid = 2;
+  int32 service = 3;
+  int32 method = 4;
+  repeated ExtendedEntry headers = 5;
+  string payload_encoding = 6;
+  string payload_type = 7;
+  bytes payload = 8;
+}
+
+message ExtendedEntry {
+  string key = 1;
+  string value = 2;
+}
+
+// ─── Inner Request / Response Wrappers ─────────────────────
+
+message Request {
+  int32 cmd = 1;
+  int64 sequence_id = 2;
+  string sdk_version = 3;
+  string token = 4;
+  int32 refer = 5;
+  int32 inbox_type = 6;
+  string build_number = 7;
+  RequestBody body = 8;
+  string device_id = 9;
+  string channel = 10;
+  string device_platform = 11;
+  string device_type = 12;
+  string os_version = 13;
+  string version_code = 14;
+  int32 config_id = 16;
+  int32 auth_type = 18;
+}
+
+message RequestBody {
+  // cmd=100
+  SendMessageRequestBody send_message_body = 100;
+  // cmd=200
+  // cmd=301
+  MessagesInConversationRequestBody messages_in_conversation_body = 301;
+  // cmd=610
+  GetConversationInfoListV2RequestBody get_conversation_info_list_v2_body = 610;
+  // cmd=2006
+  GetUserConversationListRequestBody get_conversation_list_body = 2006;
+}
+
+message Response {
+  int32 cmd = 1;
+  int64 sequence_id = 2;
+  int32 status_code = 3;
+  string error_desc = 4;
+  int32 inbox_type = 5;
+  ResponseBody body = 6;
+  string log_id = 7;
+  int64 start_time_stamp = 9;
+  int64 request_arrived_time = 10;
+  int64 server_execution_end_time = 11;
+}
+
+message ResponseBody {
+  // cmd=2006
+  GetUserConversationListResponseBody get_conversation_list_body = 2006;
+  // cmd=301
+  MessagesInConversationResponseBody messages_in_conversation_body = 301;
+  // cmd=100
+  SendMessageResponseBody send_message_body = 100;
+}
+
+// ─── GetUserConversationList (cmd=2006) ────────────────────
+
+message GetUserConversationListRequestBody {
+  int32 sort_type = 1;
+  int64 cursor = 2;
+  int32 con_type = 3;
+  int64 limit = 4;
+  int32 include_role = 5;
+  int32 exclude_role = 6;
+  bool with_cold = 8;
+}
+
+message GetUserConversationListResponseBody {
+  repeated ConversationInfoV2 list = 1;
+  bool has_more = 2;
+  int64 next_cursor = 3;
+}
+
+// ─── Init / Subscription ────────────────────────────────────
+
+message SyncInitPayload {
+  DeviceInfo device_info = 1;
+  repeated Subscription subscriptions = 2;
+}
+
+message DeviceInfo {
+  int32 type = 1;         // = 2
+  string uid = 2;         // "0" for init
+  string device_id = 3;
+  uint64 timestamp = 4;
+}
+
+// Legacy alias
+message InitBody {
+  int32 type = 1;         // = 2  
+  string uid = 2;
+  string device_id = 3;
+  uint64 timestamp = 4;
+}
+
+message Subscription {
+  int32 business_type = 2;
+  int32 subscribe_level = 3;
+  uint64 cursor = 4;
+}
+
+// ─── SendMessage (cmd=100, RequestBody field=802) ──────────
+
+message SendMessageRequestBody {
+  string conversation_id = 1;
+  int32 conversation_type = 2;       // 1=ONE_TO_ONE, 2=GROUP
+  int64 conversation_short_id = 3;
+  string content = 4;                // message text
+  repeated DmKeyValue ext = 5;
+  int32 message_type = 6;            // 10001 = TEXT, 7 = TEXT in v1
+  string ticket = 7;
+  string client_message_id = 8;
+  repeated int64 mentioned_users = 9;
+}
+
+message SendMessageResponseBody {
+  int64 server_message_id = 1;
+  string extra_info = 2;
+  int32 status = 3;                  // 0 = SEND_SUCCEED
+  string client_message_id = 4;
+  int64 check_code = 5;
+  string check_message = 6;
+}
+
+// ─── GetMessagesByConversation (cmd=301, RequestBody field=2410) ─
+
+message MessagesInConversationRequestBody {
+  string conversation_id = 1;
+  int32 conversation_type = 2;
+  int64 conversation_short_id = 3;
+  int32 direction = 4;              // 1=OLDER, 2=NEWER, 3=FROM_LATEST
+  int64 anchor_index = 5;
+  int32 limit = 6;                  // default 50
+}
+
+message MessagesInConversationResponseBody {
+  repeated MessageBody messages = 1;
+  int64 next_cursor = 2;
+  bool has_more = 3;
+}
+
+message MessageBody {
+  string conversation_id = 1;
+  int32 conversation_type = 2;
+  int64 server_message_id = 3;
+  int64 index_in_conversation = 4;
+  int64 conversation_short_id = 5;
+  int32 message_type = 6;
+  int64 sender = 7;
+  string content = 8;
+  int64 create_time = 10;
+  int64 version = 11;
+  int32 status = 12;
+  int64 order_in_conversation = 13;
+  string sec_sender = 14;
+}
+
+// ─── GetConversationInfoListV2 (cmd=610, RequestBody field=4882) ─
+
+message GetConversationInfoListV2RequestBody {
+  repeated ConversationInfoRequestItem conversation_info_list = 1;
+}
+
+message ConversationInfoRequestItem {
+  string conversation_id = 1;
+  int64 conversation_short_id = 2;
+  int32 conversation_type = 3;
+}
+
+message GetConversationInfoListV2ResponseBody {
+  repeated ConversationInfoV2 conversation_info_list = 1;
+}
+
+message ConversationInfoV2 {
+  string conversation_id = 1;
+  int64 conversation_short_id = 2;
+  int32 conversation_type = 3;
+  string ticket = 4;
+  int32 participants_count = 7;
+  bool is_participant = 8;
+  int32 inbox_type = 9;
+  ConversationCoreInfo conversation_core_info = 50;
+  ConversationSettingInfo conversation_setting_info = 51;
+  Participant user_info = 20;
+}
+
+message ConversationCoreInfo {
+  string conversation_id = 1;
+  int64 conversation_short_id = 2;
+  int32 conversation_type = 3;
+  int64 info_version = 4;
+  string name = 5;
+  string desc = 6;
+  string icon = 7;
+  int32 inbox_type = 8;
+  string notice = 9;
+  int64 owner = 12;
+  string sec_owner = 13;
+}
+
+message ConversationSettingInfo {
+  string conversation_id = 1;
+  int64 conversation_short_id = 2;
+  int32 conversation_type = 3;
+  int64 min_index = 4;
+  int64 read_index = 5;
+  int32 mute = 6;
+  int32 stick_on_top = 7;
+  int32 inbox_type = 8;
+  int32 favorite = 11;
+  int64 set_top_time = 12;
+  int64 set_favorite_time = 13;
+}
+
+message Participant {
+  int64 user_id = 1;
+  string sec_uid = 2;
+  string nickname = 3;
+  string avatar = 4;
+  int32 role = 5;          // 1=owner, 2=admin, 3=member
+}
+
+// ─── Bsync Protocol (wraps all non-init Frame payloads) ─────
+
+message BsyncProtocol {
+  BsyncHeader header = 1;
+  repeated BsyncTopic topics = 2;
+}
+
+message BsyncHeader {
+  int32 version = 1;
+  string uid = 2;
+  string did = 3;
+  int64 ts = 4;
+}
+
+enum TopicFlag {
+  ACK = 1;
+  DATA = 2;
+  SYNC = 3;
+}
+
+enum BucketType {
+  DEVICE = 0;
+  APP = 1;
+  ROOM = 2;
+}
+
+enum TopicType {
+  SPEC_TOPIC = 0;
+  GLOBAL_TOPIC = 1;
+  CUSTOM_TOPIC = 2;
+}
+
+message BsyncTopic {
+  TopicFlag flag = 1;
+  BucketType bucket = 2;
+  TopicType topic_type = 3;
+  int64 sync_id = 4;
+  int64 ref_cursor = 5;
+  int64 new_cursor = 6;
+  repeated DataItem packets = 7;
+  int32 topic_status = 8;
+}
+
+message DataItem {
+  int64 cursor = 1;
+  DataPayload payload = 2;
+  int64 ts = 3;
+  string extra = 4;
+}
+
+message DataPayload {
+  int32 business = 1;
+  int32 consume_type = 2;
+  string md5 = 3;
+  bytes data = 4;
+}
+
+// ─── Enums ──────────────────────────────────────────────────
+
+enum IMCMD {
+  SEND_MESSAGE = 100;
+  GET_MESSAGES_BY_USER = 200;
+  GET_MESSAGES_BY_USER_INIT_V2 = 203;
+  GET_MESSAGE_INFO_BY_SERVER_ID = 211;
+  GET_MESSAGES_BY_CONVERSATION = 301;
+  GET_MESSAGES_CHECKINFO_IN_CONVERSATION = 302;
+  CREATE_CONVERSATION_V2 = 609;
+  GET_CONVERSATION_INFO_LIST_V2 = 610;
+  GET_CONVERSATION_INFO_LIST_BY_FAVORITE_V2 = 611;
+  GET_CONVERSATION_INFO_LIST_BY_TOP_V2 = 612;
+  GET_CONVERSATIONS_CHECKINFO = 615;
+  GET_MEDIA_UPLOAD_TOKEN = 2003;
+  GET_MEDIA_URLS = 2004;
+  GET_TICKET = 2005;
+  GET_USER_CONVERSATION_LIST = 2006;
+}
+
+enum ConversationType {
+  ONE_TO_ONE_CHAT = 1;
+  GROUP_CHAT = 2;
+  LIVE_CHAT = 3;
+  BROADCAST_CHAT = 4;
+}
+
+enum MessageType {
+  MESSAGE_TYPE_TEXT = 10001;
+  MESSAGE_TYPE_STICKER = 10002;
+  MESSAGE_TYPE_IMAGE = 10003;
+  MESSAGE_TYPE_VIDEO = 10004;
+  MESSAGE_TYPE_FILE = 10005;
+  MESSAGE_TYPE_AUDIO = 10006;
+  MESSAGE_TYPE_LOCATION = 10007;
+  MESSAGE_TYPE_SYSTEM = 10008;
+  MESSAGE_TYPE_LINK = 10009;
+}
+
+// ─── REST API Types (used by /v2/message/*, /v1/message/*) ──
+// Content-Type: application/x-protobuf
+// Domain: im-api-sg.tiktok.com
+
+message DmKeyValue {
+  string key = 1;
+  string value = 2;
+}
+
+message DmRestRequest {
+  uint64 seqid = 1;
+  uint64 logid = 2;
+  string version = 3;       // "1.7.0"
+  string empty = 4;         // ""
+  uint32 reqType = 5;       // 3
+  uint32 unknown6 = 6;      // 0
+  string callTrace = 7;     // "3035f17:feat/call-trace-plugin"
+  bytes metadata = 8;       // endpoint-specific metadata
+  string deviceId = 9;      // device_id
+  string devicePlatform = 11; // "web" or "web_pc"
+  repeated DmKeyValue params = 15; // URL query params as key=value pairs
+  uint32 field18 = 18;      // = 1 (required for DM endpoints)
+  repeated DmKeyValue extraParams = 21; // extra key-value params (e.g. Web-Sdk-Ms-Token)
+}
+
+message DmRestResponse {
+  uint64 seqid = 1;
+  uint64 logid = 2;
+  uint32 statusCode = 3;    // 0 = success
+  string statusStr = 4;     // "OK"
+  uint32 unknown5 = 5;      // always 0
+  bytes payload = 6;        // endpoint-specific payload (field 203 for init, 204 for combo)
+  string logIdStr = 7;      // full log ID string ("20260607...")
+  uint64 timestamp1 = 10;   // timestamp (milliseconds)
+  uint64 timestamp2 = 11;   // timestamp (milliseconds)
+  string serverRegion = 14; // "Singapore-Central"
+  uint64 unknown15 = 15;    // large number (uid/device_id?)
+}
+
+// ─── GetMessagesByUserInit (field 203 inside DmRestResponse.payload) ──
+// Used by /v2/message/get_by_user_init (response only)
+
+message InitPayloadWrapper {
+  GetMessagesByUserInitBody init_body = 203;
+}
+
+message GetMessagesByUserInitBody {
+  repeated MessageBody messages = 1;
+  repeated ConversationInfoV2 conversations = 2;
+  int64 cursor = 3;         // session cursor (returned for type 0)
+  int32 has_more = 4;
+  int32 field5 = 5;
+  int32 field6 = 6;         // = 3
+  int32 field7 = 7;
+  int32 field8 = 8;
+  int32 field11 = 11;
+}
+
+// ─── MessagesPerUserCombo metadata (field 204) ──
+// Used by /v1/message/get_by_user_combo (request metadata AND response payload)
+
+message MessagesPerUserComboBody {
+  repeated MessagesPerUserComboEntry entries = 1;
+  int64 cursor_ts = 5;      // response only: server timestamp varint
+}
+
+// Request: entries use fields 1(type)+2(cursor)+3(limit)+4(8)
+// Response: entries use fields 1(type)+4(0)+5(cursor)+6(interval)+7(0)+10(0)
+message MessagesPerUserComboEntry {
+  int32 type = 1;       // 0=conversation list, 1=friend updates, 3=other
+  int64 cursor = 2;     // request only: pagination cursor
+  int32 limit = 3;      // request only: 50
+  int32 unknown4 = 4;   // 8 in request, 0 in response
+  int64 cursor_rs = 5;  // response only: returned cursor
+  int32 interval_ms = 6;  // 600 or 7200 (polling interval)
+  int32 field7 = 7;
+  int32 field10 = 10;
+}

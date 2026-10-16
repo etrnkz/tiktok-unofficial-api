@@ -1,0 +1,27 @@
+[package]
+name = "tiktok-api"
+version = "0.1.0"
+edition = "2021"
+authors = ["TikTok Unofficial API Contributors"]
+description = "Pure Rust unofficial client for TikTok Web & IM API"
+license = "MIT"
+keywords = ["tiktok", "api", "unofficial", "dm", "scraper"]
+categories = ["api-bindings", "asynchronous"]
+repository = "https://github.com/tiktok-unofficial-api"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "cookies", "gzip"] }
+prost = "0.13"
+prost-types = "0.13"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.10", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+url = "2.5"
+thiserror = "2.0"
+tracing = "0.1"
+async-trait = "0.1"
+
+[build-dependencies]
+prost-build = "0.13"

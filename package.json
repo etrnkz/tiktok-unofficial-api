@@ -1,0 +1,43 @@
+{
+  "name": "tiktok-unofficial-api",
+  "version": "1.0.0",
+  "description": "Unofficial TikTok Web API - reverse engineered from www.tiktok.com",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').copyFileSync('src/utils/dm.proto', 'dist/utils/dm.proto')\"",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "tiktok",
+    "api",
+    "unofficial",
+    "scraper",
+    "downloader"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.7.0",
+    "playwright": "^1.60.0",
+    "protobufjs": "^8.6.0",
+    "ws": "^8.21.0"
+  },
+  "optionalDependencies": {
+    "xbogus": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/node-fetch": "^2.6.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.10"
+  },
+  "files": [
+    "dist/**/*",
+    "frontierSign/**/*",
+    "extracted_vm.json",
+    "README.md",
+    "LICENSE"
+  ]
+}
