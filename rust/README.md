@@ -2,6 +2,8 @@
 
 Pure Rust unofficial client for TikTok Web & Direct Messaging (IM) API. Reverse-engineered from ByteDance's internal ByteSync protocol and Web endpoints.
 
+> TypeScript version available [here](../).
+
 ## Features
 
 - **Direct Messaging (DM)**:
