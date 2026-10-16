@@ -2,7 +2,7 @@
 
 Reverse-engineered TikTok Web & Direct Messaging (IM) client. Full HTTP/Protobuf implementation — no browser required for messaging or feeds.
 
-> Rust version available in [rust/](rust/).
+> Rust version available at [tiktok-api-rs](https://github.com/etrnkz/tiktok-api-rs).
 
 ## Features
 

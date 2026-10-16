@@ -1,7 +1,7 @@
 # Dependencies & Builds
 node_modules/
 dist/
-rust/target/
+rust/
 
 # Sensitive & Session Credentials (NEVER COMMIT)
 session.json

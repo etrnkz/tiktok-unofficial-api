@@ -1,7 +1,0 @@
-/target
-**/*.rs.bk
-Cargo.lock
-session.json
-*.bin
-.env
-.DS_Store
